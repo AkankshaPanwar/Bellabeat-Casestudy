@@ -130,7 +130,14 @@ activity_type_data %>%
 
 -   The "Activity Type Distribution" graph shows that the majority of the participants spent time being sedentary or lightly active.
 
-`{r}activity_type_data %>%    ggplot(aes(activity_type, calories, fill = activity_type)) +    geom_boxplot() +    labs(title = "Calories Burned during each Activity Type", x=NULL)` ![](~/Users/Documents/R/R%20Viz/Calories%20burned%20by%20each%20activity%20type.png)
+```{r}
+activity_type_data %>%    
+ ggplot(aes(activity_type, calories, fill = activity_type)) +    
+ geom_boxplot() +    
+ labs(title = "Calories Burned during each Activity Type", x=NULL)
+``` 
+
+![](~/Users/Documents/R/R%20Viz/Calories%20burned%20by%20each%20activity%20type.png)
 
 * The Box Plot shows that the participants who are very active burn the most amount of calories.
 
