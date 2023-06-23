@@ -1,0 +1,182 @@
+---
+title: "Bellabeat Report"
+author: "Akanksha Panwar"
+date: "21/02/2022"
+output: html_document
+---
+
+# Business Task:
+
+  * To analyse trends in smart device data to see how users use them.
+  * Bellabeat is a company that tracks health data for women. It was founded by Urška Sršen: Bellabeat's cofounder and Chief Creative Officer and Sando Mur: Mathematician and Bellabeat's cofounder.
+  * The purpose of analysing smart device usage is to find out how these devices are used and give recommendations for one of Bellabeat's products to influence Bellabeat's marketing strategy.
+
+# Preparing the Data:
+
+-   Cofounder Sršen has asked for a specific dataset called [FitBit Fitness Tracker Data](https://www.kaggle.com/arashnic/fitbit) to be used in the analysis.
+-   This dataset has been made available by a dataset expert who goes by the name [Mobius](https://www.kaggle.com/arashnic) on Kaggle. This dataset contains fitness data of 30 FitBit users who consented to making their personal fitness data public.
+-   Out of all the files in the data, only minute level data for calories, intensities and steps are provided in both long and wide format. The rest of the files; daily activities, heart rate, METs and hourly data for calories, intensities and steps, are all in long format.
+-   The Data needs a lot of cleaning and that will be done in the next phase.
+
+## Loading Packages:
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(janitor)
+library(reshape2)
+```
+
+## Importing Datasets:
+
+```{r}
+daily_activity <- read_csv("D://Users/Documents/Projects/Fitabase Data/dailyActivity_merged.csv")
+weight_log <- read_csv("D://Users/Documents/Projects/Fitabase Data/weightLogInfo_merged.csv")
+sleep_log <- read_csv("D://Users/Documents/Projects/Fitabase Data/sleepDay_merged.csv")
+mets <- read_csv("D://Users/Documents/Projects/Fitabase Data/minuteMETsNarrow_merged.csv")
+```
+
+# Cleaning Process:
+
+```{r}
+head(daily_activity)
+glimpse(daily_activity)
+daily_activity <- clean_names(daily_activity)
+daily_activity$date <- as.POSIXct(daily_activity$activity_date, format="%m/%d/%Y", tz=Sys.timezone())
+daily_activity$date <- as.Date(daily_activity$date, "%d/%m/%Y", tz=Sys.timezone())
+daily_activity <- daily_activity[, -2]
+
+glimpse(mets)
+mets_log <- rename_with(mets, tolower)
+mets_log$date <- as.Date(mets_log$activityminute, "%d/%m/%Y")
+mets_log$activity_minute <- parse_date_time(mets_log$activityminute, "%m/%d/%Y %I:%M:%S %p")
+mets_log <- mets_log[, -2]
+
+glimpse(sleep_log)
+sleep_log <- clean_names(sleep_log)
+sleep_log$date <- as.POSIXct(sleep_log$sleep_day, format="%m/%d/%Y", tz=Sys.timezone())
+sleep_log$date <- as.Date(sleep_log$date, "%d/%m/%Y", tz=Sys.timezone())
+sleep_log <- sleep_log[, -2]
+
+glimpse(weight_log)
+weight_log$date <- as.Date(weight_log$Date, "%d/%m/%Y", tz=Sys.timezone())
+weight_log <- clean_names(weight_log)
+weight_log <- weight_log[, -2]
+```
+
+-   Added underscores between the words in column names and changed all column names to lowercase.
+-   change activity_date, activityminute, sleep_day, Date columns from string format to date time format.
+-   Added date column to all the datasets in date format for merging later.
+-   Removed columns that were no longer required for the analysis process.
+
+```{r}
+n_distinct(daily_activity$id)
+n_distinct(mets_log$id)
+n_distinct(sleep_log$id)
+n_distinct(weight_log$id)
+```
+
+-   Number of participants in weight_log dataframe is 8, which is not a significant number to conduct data analysis on the dataframe. Therefore, I will use daily_activity, mets_log and sleep_log dataframes for the analysis.
+
+#Analyse Data
+
+-   Merged the dataframes "daily_activity" and "sleep_log" according to "id" and "date" columns, not including some columns that are not required.
+
+```{r}
+merge_1 <- merge(daily_activity, sleep_log, by=c('id', 'date')) %>% select(id, date, total_steps, total_distance, very_active_minutes, fairly_active_minutes, lightly_active_minutes, sedentary_minutes, calories, total_minutes_asleep)
+View(merge_1)
+
+merge_1 %>% select(-id, -date) %>% summary()
+```
+
+-   According to the summary statistics of the dataset "merge_1", average sedentary minutes is 712.2 minutes, i.e., approximately 12 hours. This is too much inactivity in one day.
+-   Average sleep duration is 419.5 minutes, i.e., 7 hours, which is not bad as it should be around 6-8 hours per day.
+-   Participants are mostly lightly active and barely spend time either, vigorously active or moderately active.
+
+##Visualizing Data:
+
+```{r}
+head(merge_1)
+
+activity_type_data <- merge_1 %>%
+  summarise(
+  activity_type = factor(case_when(
+  sedentary_minutes > mean(sedentary_minutes) & lightly_active_minutes < mean(lightly_active_minutes) & fairly_active_minutes < mean(fairly_active_minutes) & very_active_minutes < mean(very_active_minutes) ~ "sedentary",
+  sedentary_minutes < mean(sedentary_minutes) & lightly_active_minutes > mean(lightly_active_minutes) & fairly_active_minutes < mean(fairly_active_minutes) & very_active_minutes < mean(very_active_minutes) ~ "lightly_active", 
+  sedentary_minutes < mean(sedentary_minutes) & lightly_active_minutes < mean(lightly_active_minutes) & fairly_active_minutes > mean(fairly_active_minutes) & very_active_minutes < mean(very_active_minutes) ~ "fairly_active", 
+  sedentary_minutes < mean(sedentary_minutes) & lightly_active_minutes < mean(lightly_active_minutes) & fairly_active_minutes < mean(fairly_active_minutes) & very_active_minutes > mean(very_active_minutes) ~ "very_active"), 
+  levels = c("sedentary", "lightly_active", "fairly_active", "very_active")), 
+  calories, total_minutes_asleep, .groups = id) %>% 
+  drop_na()
+  
+activity_type_data %>% 
+  group_by(activity_type) %>% 
+  summarise(
+  total = n()) %>% 
+  mutate(totals = sum(total)) %>% 
+  group_by(activity_type) %>% 
+  summarise(
+    participants_percent = total/totals) %>% 
+  ggplot(
+    aes(activity_type, y = participants_percent, fill=activity_type)) + 
+  geom_col() +  
+  scale_y_continuous(labels = scales::percent) + 
+  labs(title = "Activity Type Distribution" , x= NULL)
+```
+
+![](~/Users/Documents/R/R%20Viz/Activity%20Type%20Distribution.png)
+
+-   The "Activity Type Distribution" graph shows that majority of the participants spent time being sedentary or lightly active.
+
+`{r}activity_type_data %>%    ggplot(aes(activity_type, calories, fill = activity_type)) +    geom_boxplot() +    labs(title = "Calories Burned during each Activity Type", x=NULL)` ![](~/Users/Documents/R/R%20Viz/Calories%20burned%20by%20each%20activity%20type.png)
+
+\*The Box Plot shows that the participants who are very active burn the most amount of calories.
+
+```{r}
+sleep_type_data <- merge_1 %>% 
+  group_by(id) %>% 
+  summarise(
+  activity_type = factor(case_when(
+  sedentary_minutes > mean(sedentary_minutes) & lightly_active_minutes < mean(lightly_active_minutes) & fairly_active_minutes < mean(fairly_active_minutes) & very_active_minutes < mean(very_active_minutes) ~ "sedentary", 
+  sedentary_minutes < mean(sedentary_minutes) & lightly_active_minutes > mean(lightly_active_minutes) & fairly_active_minutes < mean(fairly_active_minutes) & very_active_minutes < mean(very_active_minutes) ~ "lightly_active", 
+  sedentary_minutes < mean(sedentary_minutes) & lightly_active_minutes < mean(lightly_active_minutes) & fairly_active_minutes > mean(fairly_active_minutes) & very_active_minutes < mean(very_active_minutes) ~ "fairly_active", 
+  sedentary_minutes < mean(sedentary_minutes) & lightly_active_minutes < mean(lightly_active_minutes) & fairly_active_minutes < mean(fairly_active_minutes) & very_active_minutes > mean(very_active_minutes) ~ "very_active"), 
+  levels = c("sedentary", "lightly_active", "fairly_active", "very_active")), 
+  sleep_type = factor(case_when(
+    mean(total_minutes_asleep) < 360 ~ "Poor Sleep", 
+    mean(total_minutes_asleep) > 360 & mean(total_minutes_asleep) <= 480 ~ "Normal Sleep",
+    mean(total_minutes_asleep) > 480 ~ "Oversleep"), 
+    levels = c("Poor Sleep", "Normal Sleep", "Oversleep")), 
+  total_sleep = sum(total_minutes_asleep), .groups = "drop") %>% 
+  drop_na() %>% 
+  group_by(activity_type) %>% 
+  summarise(
+    bad_sleepers = sum(sleep_type == "Poor Sleep"), 
+    normal_sleepers = sum(sleep_type == "Normal Sleep"), 
+    oversleepers = sum(sleep_type == "Oversleep"), 
+    total = n(), .groups= "drop") %>% 
+  group_by(activity_type) %>% 
+  summarise(
+    bad_sleepers = bad_sleepers/total, 
+    normal_sleepers = normal_sleepers/total, 
+    oversleepers = oversleepers/total, .groups = "drop")
+```
+
+```{r}
+sleep_type_data_melted <- melt(sleep_type_data, id.vars = "activity_type")
+
+ggplot(sleep_type_data_melted, aes(activity_type, value, fill= variable)) + geom_bar(position = "dodge", stat = "identity") + scale_y_continuous(labels = scales::percent) + labs(title = "Sleep Quality according Activity Type", x=NULL, fill= "Sleep Type")
+```
+
+![](~/Users/Documents/R/R%20Viz/Sleep%20Quality%20according%20to%20Activity%20Type.png)
+
+-   The Bar graph for comparing sleep quality with activity type shows that people who are fairly active or very active, tend to not oversleep at all. Although around 30% of them dont seem to get enough sleep.
+-   Of the people who are mostly sedentary or lighlty active, around 20% each, tend to oversleep.
+
+#Conclusions:
+
+According to the observations made above, I have the following insights for the Bellabeat App: \* Since majority of hte participants are sedentary or lightly active, the app can send frequent notifications as reminders to take a break and move and rehydrate for the user. \* The app could have a feature for setting daily or weekly goals, like calories burned or total steps, that the user can set for themselves and aim to achieve in incremental stages. \* Daily motivational quotes or even health specific articles, on a separate tab in the app, might also encourage the user to make healthy changes to their lifestyle. \* A weekly report on the user's sleep cycle could bring light to any changes the user might want to make to their sleeping habits. The app can enlighten the user of the risks of sleeping too little or oversleeping. \* An animated yearly report at the end of the year, like a rewind, shpwing every user their stats and goals set and achieved throughout the past year is also a good idea to make the user realise how much difference one year can make, even with small changes in lifestyle. Thereby, encouraging the user to do even better the upcoming year. \* Maybe the company can offer incentive to the user like posting about the user's progress on the company's official social media pages.
+
+### Thank you for reading!
