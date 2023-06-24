@@ -185,11 +185,11 @@ ggplot(sleep_type_data_melted, aes(activity_type, value, fill= variable)) + geom
 # Conclusions:
 
 According to the observations made above, I have the following insights for the Bellabeat App: 
-* Since the majority of the participants are sedentary or lightly active, the app can send frequent notifications as reminders to take a break and move and rehydrate for the user. 
-* The app could have a feature for setting daily or weekly goals, like calories burned or total steps, that the user can set for themselves and aim to achieve in incremental stages. 
-* Daily motivational quotes or even health-specific articles, on a separate tab in the app, might also encourage the user to make healthy changes to their lifestyle. 
-* A weekly report on the user's sleep cycle could bring light to any changes the user might want to make to their sleeping habits. The app can enlighten the user about the risks of sleeping too little or oversleeping. 
-* An animated yearly report at the end of the year, like a rewind, showing every user their stats and goals set and achieved throughout the past year is also a good idea to make the user realize how much difference one year can make, even with small changes in lifestyle. Thereby, encouraging the user to do even better in the upcoming year. 
-* Maybe the company can offer incentives to the user like posting about the user's progress on the company's official social media pages.
+-   Since the majority of the participants are sedentary or lightly active, the app can send frequent notifications as reminders to take a break and move and rehydrate for the user. 
+-   The app could have a feature for setting daily or weekly goals, like calories burned or total steps, that the user can set for themselves and aim to achieve in incremental stages. 
+-   Daily motivational quotes or even health-specific articles, on a separate tab in the app, might also encourage the user to make healthy changes to their lifestyle. 
+-   A weekly report on the user's sleep cycle could bring light to any changes the user might want to make to their sleeping habits. The app can enlighten the user about the risks of sleeping too little or oversleeping. 
+-   An animated yearly report at the end of the year, like a rewind, showing every user their stats and goals set and achieved throughout the past year is also a good idea to make the user realize how much difference one year can make, even with small changes in lifestyle. Thereby, encouraging the user to do even better in the upcoming year. 
+-   Maybe the company can offer incentives to the user like posting about the user's progress on the company's official social media pages.
 
 ### Thank you for reading!
