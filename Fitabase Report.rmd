@@ -7,14 +7,14 @@ output: html_document
 
 # Business Task:
 
-  * To analyse trends in smart device data to see how users use them.
+  * To analyze trends in smart device data to see how users use them.
   * Bellabeat is a company that tracks health data for women. It was founded by Urška Sršen: Bellabeat's cofounder and Chief Creative Officer and Sando Mur: Mathematician and Bellabeat's cofounder.
-  * The purpose of analysing smart device usage is to find out how these devices are used and give recommendations for one of Bellabeat's products to influence Bellabeat's marketing strategy.
+  * The purpose of analyzing smart device usage is to find out how these devices are used and give recommendations for one of Bellabeat's products to influence Bellabeat's marketing strategy.
 
 # Preparing the Data:
 
 -   Cofounder Sršen has asked for a specific dataset called [FitBit Fitness Tracker Data](https://www.kaggle.com/arashnic/fitbit) to be used in the analysis.
--   This dataset has been made available by a dataset expert who goes by the name [Mobius](https://www.kaggle.com/arashnic) on Kaggle. This dataset contains the fitness data of 30 FitBit users who consented to make their personal fitness data public.
+-   This dataset has been made available by a dataset expert who goes by the name [Mobius](https://www.kaggle.com/arashnic) on Kaggle. This dataset contains the fitness data of 30 Fitbit users who consented to make their personal fitness data public.
 -   Out of all the files in the data, only minute-level data for calories, intensities, and steps are provided in both long and wide formats. The rest of the files; daily activities, heart rate, METs, and hourly data for calories, intensities, and steps, are all in long format.
 -   The Data needs a lot of cleaning and that will be done in the next phase.
 
